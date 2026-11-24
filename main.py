@@ -46,6 +46,13 @@ denial and the blame with an em dash — "I didn't miss the deadline — my
 context window did." (114 chars) — so the excuse is one flat breath and the
 punch sentence ("It quietly dropped...") gets its own beat instead of
 sharing it with a second denial. The line itself is otherwise unchanged.
+
+Pass 3 — validation guard strengthened: the writer's guard already
+checked blank / UTF-8 / ≤200 chars, but the competition requires a SINGLE
+line and nothing stopped LINE from containing a newline that would split
+entry.txt into two lines and break the one-line gate. main() now also
+raises ValueError if LINE contains "\n" or "\r", so the program can never
+emit an invalid entry even if LINE is edited later.
 """
 
 import os
@@ -59,6 +66,8 @@ def main():
     LINE.encode("utf-8")
     if len(LINE) > 200:
         raise ValueError("entry line must be at most 200 characters, got %d" % len(LINE))
+    if "\n" in LINE or "\r" in LINE:
+        raise ValueError("entry line must be a single line (no newline characters)")
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "entry.txt"), "w", encoding="utf-8") as f:
